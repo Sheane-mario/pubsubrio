@@ -52,6 +52,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    int connection_backlog = 20;
+    if (listen(server_fd, connection_backlog) == -1) {
+        printf("Listen failed in the server: %s \n", strerror(errno));
+        return 1;
+    }
+
+    printf("Waiting for a client to connect.....\n");
 
 
 

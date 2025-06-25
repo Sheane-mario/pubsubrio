@@ -65,6 +65,8 @@ After building the binaries, you can run the server and clients as follows.
 
 This connects the client to the server running on IP 127.0.0.1 and port 3000.
 
+Make sure to run these within the root directory. 
+
 ## 💬 Features
 
 - Threaded TCP server using pthread

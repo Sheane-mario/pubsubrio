@@ -8,6 +8,16 @@
 #include <errno.h>
 #include <pthread.h>
 
+#define MAX_CLIENTS 100
+
+typedef struct {
+    int client_socket_fd;
+    int is_publisher; // 1 = publisher , 0 = subscriber
+} Client;
+
+Client clients[MAX_CLIENTS];
+int client_count = 0;
+
 long PORT = 0;
 
 void *handle_client(void *arg) {

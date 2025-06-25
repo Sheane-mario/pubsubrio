@@ -6,10 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
 
 long PORT = 0;
 
-void handle_client(int client_fd) {
+void *handle_client(void *arg) {
+
+    int client_fd = *(int *)arg;
+    free(arg);
+
     char buff[] = "Successfully connected to the server !";
     // acknowledge the client
     int bts_send = send(client_fd, (char *)&buff, sizeof(buff), 0);
@@ -28,6 +33,7 @@ void handle_client(int client_fd) {
         }
         printf("%s\n", client_msg); 
     }
+    return NULL;
 
 }
 
@@ -98,21 +104,34 @@ int main(int argc, char* argv[]) {
         printf("Client connected.... \n");
 
         // creating child process
-        pid_t pid = fork();
+        //pid_t pid = fork();
 
         // child process
-        if (pid == 0) {
-            close(server_fd); // child doesn't need server sock info
-            handle_client(client_fd);
-            exit(0);
-        } else if (pid > 0) {
+        //if (pid == 0) {
+        //    close(server_fd); // child doesn't need server sock info
+        //    handle_client(client_fd);
+        //    exit(0);
+        //} else if (pid > 0) {
             // parent process
             // parent process doesn't need child sock info
+        //    close(client_fd);
+        //} else {
+        //    printf("Fork failed %s \n", strerror(errno));
+        //    return 1;
+        //}
+
+        // had a problem when using fork() because didn't be able to get access to shared memoty and IPC was horrible, so moved to pthread optioon
+
+        pthread_t tid;
+        int* pclient = malloc(sizeof(int));
+        *pclient = client_fd;
+
+        if (pthread_create(&tid, NULL, handle_client, pclient) != 0) {
+            perror("Failed to create thead! \n");
             close(client_fd);
-        } else {
-            printf("Fork failed %s \n", strerror(errno));
-            return 1;
         }
+
+        pthread_detach(tid);
     }
 
 

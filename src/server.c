@@ -9,6 +9,10 @@
 
 long PORT = 0;
 
+void handle_client(int client_fd) {
+    printf("Hello im the client \n");
+}
+
 int main(int argc, char* argv[]) {
 
     // disable output buffering
@@ -43,7 +47,7 @@ int main(int argc, char* argv[]) {
     // tell the kernel where the server socket is listening on. mention the adderes family(IPv4), port number and the IPv4 address
     struct sockaddr_in server_addr;
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(4221); // convert from little endian to big endian since TCP/IP expect big-end
+    server_addr.sin_port = htons(PORT); // convert from little endian to big endian since TCP/IP expect big-end
     inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
     // bind the socket with the IP address specifiend aboce.
@@ -58,7 +62,40 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    //  server is waiting for the client
     printf("Waiting for a client to connect.....\n");
+
+    // place where the client socket info will be saved
+    struct sockaddr_in client_addr;
+    unsigned int client_addr_len = sizeof(client_addr);
+
+    while (1) {
+        // accepting the client request 
+        int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+        if (client_fd == -1) {
+            printf("Client connection unsuccessful! %s \n", strerror(errno));
+            return 1; 
+        }
+
+        printf("Client connected.... \n");
+
+        // creating child process
+        pid_t pid = fork();
+
+        // child process
+        if (pid == 0) {
+            close(server_fd); // child doesn't need server sock info
+            handle_client(client_fd);
+            exit(0);
+        } else if (pid > 0) {
+            // parent process
+            // parent process doesn't need child sock info
+            close(client_fd);
+        } else {
+            printf("Fork failed %s \n", strerror(errno));
+            return 1;
+        }
+    }
 
 
 

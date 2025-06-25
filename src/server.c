@@ -10,7 +10,25 @@
 long PORT = 0;
 
 void handle_client(int client_fd) {
-    printf("Hello im the client \n");
+    char buff[] = "Successfully connected to the server !";
+    // acknowledge the client
+    int bts_send = send(client_fd, (char *)&buff, sizeof(buff), 0);
+    if (bts_send < 0) {
+        perror("Couldn't acknowledge the client!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char client_msg[4096];
+    while (1) {
+        recv(client_fd, client_msg, sizeof(client_msg)-1, 0);
+        if (strcmp(client_msg, "exit\n") == 0) {
+            printf("Client disconnected! \n");
+            close(client_fd);
+            break;
+        }
+        printf("%s\n", client_msg); 
+    }
+
 }
 
 int main(int argc, char* argv[]) {

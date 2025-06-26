@@ -61,7 +61,7 @@ void *handle_client(void *arg) {
     char client_msg[4096];
     while (1) {
         recv(client_fd, client_msg, sizeof(client_msg)-1, 0);
-        if (strcmp(client_msg, "exit\n") == 0) {
+        if (strcmp(client_msg, "terminate\n") == 0) {
             printf("Client disconnected! \n");
             close(client_fd);
             break;

@@ -32,7 +32,7 @@ void *send_thread_func() {
     while (1) {
         fgets(client_command, sizeof(client_command), stdin);
         int comm_s = send(client_fd, (char *)&client_command, sizeof(client_command), 0);
-        if (strcmp(client_command, "exit\n" ) == 0) {
+        if (strcmp(client_command, "terminate\n" ) == 0) {
             // here i got a bug, when the exit is typed from the send thread, it closes the socket, so that receive thead runs infinitely, which was found to be a classic multithreading bug. 
             //close(client_fd);
             // using this shutdown i send signals to both the thereads that this is going to terminate, so close the socket from their threads as well

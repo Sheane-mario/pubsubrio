@@ -130,4 +130,4 @@ Client Side:
 
  ### 🔄 Full Duplex I/O
  
-- Client and server maintain bidirectional, simultaneous message flow using recv() and send().
+- Client and server maintain bidirectional, simultaneous message flow using ```recv()``` and ```send()```.

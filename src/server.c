@@ -9,6 +9,7 @@
 #include <pthread.h>
 
 #define MAX_CLIENTS 100
+#define MAX_TOPIC_LENGTH 256
 
 // manage globally the connected clients
 typedef struct {
@@ -41,6 +42,16 @@ void *handle_client(void *arg) {
         printf("Client mode: %s \n", mode);
     } else {
         printf("Couldn't receive the client connected mode! \n");
+        printf("Disconnecting client.....\n");
+        close(client_fd);
+        return NULL;
+    }
+
+    // store the client's topic here
+    char topic[1024];
+    int recv_topic_s = recv(client_fd, topic, sizeof(topic) - 1, 0);
+    if (recv_topic_s < 0) {
+        printf("Couldn't receive the client topic! \n");
         printf("Disconnecting client.....\n");
         close(client_fd);
         return NULL;

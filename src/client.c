@@ -11,6 +11,17 @@ long SERVER_PORT = 0;
 char* SERVER_IP;
 char* MODE;
 
+// I made client_fd global, so that multiple thread can use this socket to concurrent communication
+int client_fd;
+
+void *recv_thread_func() {
+    return NULL;
+}
+
+void *send_thread_func() {
+    return NULL;
+}
+
 int main(int argc, char* argv[]) {
 
     // disable output buffering
@@ -34,7 +45,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    int client_fd = socket(PF_INET, SOCK_STREAM, 0);
+    client_fd = socket(PF_INET, SOCK_STREAM, 0);
     if (client_fd == -1) {
         printf("Client Socket creation failed: %s \n", strerror(errno)); 
         return 1;
@@ -73,19 +84,37 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    char client_command[4096];
-    while (1) {
-        fgets(client_command, sizeof(client_command), stdin);
-        int comm_s = send(client_fd, (char *)&client_command, sizeof(client_command), 0);
-        if (strcmp(client_command, "exit\n" ) == 0) {
-            close(client_fd);
-            break;
-        } 
-        if (comm_s < 0) {
-            perror("Couldn't send the message to the server! \n");
-            exit(EXIT_FAILURE);
-        }
+    // now i need to create two theads to handle send and receive loops
+    // below thing doesn't work anymore
+//    char client_command[4096];
+//    while (1) {
+//        fgets(client_command, sizeof(client_command), stdin);
+//        int comm_s = send(client_fd, (char *)&client_command, sizeof(client_command), 0);
+//        if (strcmp(client_command, "exit\n" ) == 0) {
+//            close(client_fd);
+//            break;
+//        } 
+//        if (comm_s < 0) {
+//            perror("Couldn't send the message to the server! \n");
+//            exit(EXIT_FAILURE);
+//        }
+//    }
+
+    // creating two threads to send messages to the server and receive messages from publishers
+    pthread_t t_send, t_recv;
+    if (pthread_create(&t_send, NULL, send_thread_func, NULL) != 0) {
+        perror("Failed to create send thread!\n");
+        close(client_fd);
     }
+    if (pthread_create(&t_recv, NULL, recv_thread_func, NULL) != 0) {
+        perror("Failed to create receive thread!\n");
+        close(client_fd);
+    }
+    // couple those threads with the main so none will terminate while main is active  
+    // we need to keep these two active while main is alive
+    pthread_join(t_recv, NULL);
+    pthread_join(t_send, NULL);
+
 
     return 0;
 

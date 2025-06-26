@@ -54,7 +54,7 @@ void *handle_client(void *arg) {
     clients[client_count++] = new_client;
 
     printf("Clients count: %d \n", client_count);
-    printf("%d %d\n", new_client.client_socket_fd, new_client.is_publisher);
+    //printf("%d %d\n", new_client.client_socket_fd, new_client.is_publisher);
 
     char client_msg[4096];
     while (1) {

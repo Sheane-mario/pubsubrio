@@ -104,20 +104,9 @@ int main(int argc, char* argv[]) {
 
     // now we need to send the client connected mode to the server, [PUBLISHER | SUBSCRIBER]
     
-    int mode_ss = send(client_fd, MODE, strlen(MODE), 0);
-    if (mode_ss < 0) {
-        close(client_fd);
-        printf("Couldn't send the mode to the server!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // now we need to send the client subscribed or published topic to the server as well
-    int pubsub_topic_ss = send(client_fd, TOPIC, strlen(TOPIC), 0);
-    if (pubsub_topic_ss < 0) {
-        close(client_fd);
-        printf("Unable to send the topic to the server!\n");
-        exit(EXIT_FAILURE);
-    }
+    char mode_topic[1024];
+    sprintf(mode_topic, "%s|%s", MODE, TOPIC);
+    send(client_fd, mode_topic, strlen(mode_topic), 0);
 
     // now i need to create two theads to handle send and receive loops
     // below thing doesn't work anymore

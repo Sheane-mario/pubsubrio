@@ -46,6 +46,16 @@ void *handle_client(void *arg) {
         return NULL;
     }
 
+    // creating and storing the new client
+    Client new_client;
+    new_client.client_socket_fd = client_fd;
+    new_client.is_publisher = (strncmp(mode, "PUBLISHER", 9) == 0 ? 1 : 0);
+    // storing the client in the global clients array
+    clients[client_count++] = new_client;
+
+    printf("Clients count: %d \n", client_count);
+    printf("%d %d\n", new_client.client_socket_fd, new_client.is_publisher);
+
     char client_msg[4096];
     while (1) {
         recv(client_fd, client_msg, sizeof(client_msg)-1, 0);

@@ -15,6 +15,7 @@
 typedef struct {
     int client_socket_fd;
     int is_publisher; // 1 = publisher , 0 = subscriber
+    char client_topic[MAX_TOPIC_LENGTH]; // store the client pub/sub topic
 } Client;
 
 Client clients[MAX_CLIENTS];
@@ -23,6 +24,9 @@ int client_count = 0;
 long PORT = 0;
 
 void *handle_client(void *arg) {
+
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
 
     int client_fd = *(int *)arg;
     free(arg);
@@ -36,36 +40,23 @@ void *handle_client(void *arg) {
     }
 
     // storing the client connected mode and disconnecting the client if mode couldn't be configured.
-    char mode[512];
-    int recv_mode_s = recv(client_fd, mode, sizeof(mode) - 1, 0);
-    if (recv_mode_s > 0) {
-        printf("Client mode: %s \n", mode);
-    } else {
-        printf("Couldn't receive the client connected mode! \n");
-        printf("Disconnecting client.....\n");
-        close(client_fd);
-        return NULL;
-    }
+    char mode_topic[1024]={0};
+    int n = recv(client_fd, mode_topic, sizeof(mode_topic)-1, 0);
+    mode_topic[n] = '\0';
 
-    // store the client's topic here
-    char topic[1024];
-    int recv_topic_s = recv(client_fd, topic, sizeof(topic) - 1, 0);
-    if (recv_topic_s < 0) {
-        printf("Couldn't receive the client topic! \n");
-        printf("Disconnecting client.....\n");
-        close(client_fd);
-        return NULL;
-    }
+    char *mode = strtok(mode_topic, "|");
+    char *topic = strtok(NULL, "|");
 
     // creating and storing the new client
     Client new_client;
     new_client.client_socket_fd = client_fd;
     new_client.is_publisher = (strncmp(mode, "PUBLISHER", 9) == 0 ? 1 : 0);
+    strncpy(new_client.client_topic, topic, strlen(topic));
+
     // storing the client in the global clients array
     clients[client_count++] = new_client;
 
     printf("Clients count: %d \n", client_count);
-    //printf("%d %d\n", new_client.client_socket_fd, new_client.is_publisher);
 
     char client_msg[4096];
     while (1) {
@@ -78,7 +69,7 @@ void *handle_client(void *arg) {
         // if this client is a publisher, we need to breadcast the messages to all the subscribers, but not for any other publisher. 
         if (new_client.is_publisher) {
             for (int i=0; i<client_count; i++) {
-                if (!clients[i].is_publisher) {
+                if (!clients[i].is_publisher && (strcmp(new_client.client_topic, clients[i].client_topic) == 0)) {
                     send(clients[i].client_socket_fd, (char *)&client_msg, sizeof(client_msg), 0);
                 }
             }

@@ -9,6 +9,7 @@
 
 long SERVER_PORT = 0;
 char* SERVER_IP;
+char* MODE;
 
 int main(int argc, char* argv[]) {
 
@@ -16,8 +17,8 @@ int main(int argc, char* argv[]) {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
-    if (argc < 3) {
-        printf("Please provide the [SERVER_IP] and the [SERVER_PORT] !\n");
+    if (argc < 4) {
+        printf("Please provide the [SERVER_IP], [SERVER_PORT] and [MODE] !\n");
         return 1;
     }
 
@@ -25,6 +26,12 @@ int main(int argc, char* argv[]) {
     char* portstr;
     SERVER_PORT = strtol(argv[2], &portstr, 10);
     SERVER_IP = argv[1];
+    MODE = argv[3];
+
+    if ((strcmp(MODE, "PUBLISHER") != 0) && (strcmp(MODE, "SUBSCRIBER") != 0)) {
+        printf("Invalid Client mode ! \n");
+        return 1;
+    }
 
 
     int client_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -55,6 +62,15 @@ int main(int argc, char* argv[]) {
     if (bytes_rec > 0) {
         conn_succ[bytes_rec] = '\0';
         printf("Message from server: %s\n", conn_succ);
+    }
+
+    // now we need to send the client connected mode to the server, [PUBLISHER | SUBSCRIBER]
+    
+    int mode_ss = send(client_fd, MODE, strlen(MODE), 0);
+    if (mode_ss < 0) {
+        close(client_fd);
+        printf("Couldn't send the mode to the server!\n");
+        exit(EXIT_FAILURE);
     }
 
     char client_command[4096];

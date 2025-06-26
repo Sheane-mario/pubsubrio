@@ -10,6 +10,7 @@
 
 #define MAX_CLIENTS 100
 
+// manage globally the connected clients
 typedef struct {
     int client_socket_fd;
     int is_publisher; // 1 = publisher , 0 = subscriber
@@ -31,6 +32,18 @@ void *handle_client(void *arg) {
     if (bts_send < 0) {
         perror("Couldn't acknowledge the client!\n");
         exit(EXIT_FAILURE);
+    }
+
+    // storing the client connected mode and disconnecting the client if mode couldn't be configured.
+    char mode[512];
+    int recv_mode_s = recv(client_fd, mode, sizeof(mode) - 1, 0);
+    if (recv_mode_s > 0) {
+        printf("Client mode: %s \n", mode);
+    } else {
+        printf("Couldn't receive the client connected mode! \n");
+        printf("Disconnecting client.....\n");
+        close(client_fd);
+        return NULL;
     }
 
     char client_msg[4096];

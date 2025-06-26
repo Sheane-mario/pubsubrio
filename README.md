@@ -86,25 +86,25 @@ This Pub/Sub system is built in pure C using low-level system programming concep
 
 ### 🔌 Socket Programming
 
-- Implemented using POSIX sockets (<sys/socket.h>) to create full-duplex TCP connections.
-- Uses AF_INET (IPv4) with SOCK_STREAM for TCP communication.
-- Configures SO_REUSEADDR using setsockopt() to allow fast socket rebinding during rapid testing.
+- Implemented using POSIX sockets ```(<sys/socket.h>)``` to create full-duplex TCP connections.
+- Uses ```AF_INET``` (IPv4) with ```SOCK_STREAM``` for TCP communication.
+- Configures SO_REUSEADDR using ```setsockopt()``` to allow fast socket rebinding during rapid testing.
 
 ### 📡 Client-Server Architecture
 
-The server listens for incoming client connections using listen() and accept(), operating in a loop to handle multiple clients.
+The server listens for incoming client connections using ```listen()``` and ```accept()```, operating in a loop to handle multiple clients.
 
 Each client must specify:
 
-- Mode: PUBLISHER or SUBSCRIBER
+- Mode: ```PUBLISHER``` or ```SUBSCRIBER```
 - Topic: a string to route messages by interest
 
  ### 🧵 Multithreading (Concurrency)
  
 Server Side:
 
-- Uses pthread_create() to spawn a new thread (handle_client) for each client.
-- Uses pthread_detach() to avoid memory leaks and free thread resources automatically.
+- Uses ```pthread_create()``` to spawn a new thread (handle_client) for each client.
+- Uses ```pthread_detach()``` to avoid memory leaks and free thread resources automatically.
 
 Client Side:
 
@@ -116,9 +116,9 @@ Client Side:
  ### 🔄 Graceful Termination
  
 - Clients can type terminate to gracefully shut down:
-  - Uses shutdown(sock, SHUT_RDWR) to signal both threads to exit.
+  - Uses ```shutdown(sock, SHUT_RDWR)``` to signal both threads to exit.
   - Prevents dangling socket reads on the receiver thread after sender exit.
-- Proper close() calls on all sockets to free system resources.
+- Proper ```close()``` calls on all sockets to free system resources.
 
 ### 📨 Topic-Based Publish/Subscribe Logic
 

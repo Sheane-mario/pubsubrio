@@ -64,6 +64,14 @@ void *handle_client(void *arg) {
             close(client_fd);
             break;
         }
+        // if this client is a publisher, we need to breadcast the messages to all the subscribers, but not for any other publisher. 
+        if (new_client.is_publisher) {
+            for (int i=0; i<client_count; i++) {
+                if (!clients[i].is_publisher) {
+                    send(clients[i].client_socket_fd, (char *)&client_msg, sizeof(client_msg), 0);
+                }
+            }
+        }
         printf("%s\n", client_msg); 
     }
     return NULL;

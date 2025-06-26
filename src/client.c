@@ -11,6 +11,7 @@
 long SERVER_PORT = 0;
 char* SERVER_IP;
 char* MODE;
+char* TOPIC;
 
 // I made client_fd global, so that multiple thread can use this socket to concurrent communication
 int client_fd;
@@ -53,8 +54,8 @@ int main(int argc, char* argv[]) {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
-    if (argc < 4) {
-        printf("Please provide the [SERVER_IP], [SERVER_PORT] and [MODE] !\n");
+    if (argc < 5) {
+        printf("Please provide the [SERVER_IP], [SERVER_PORT], [MODE] and [TOPIC] !\n");
         return 1;
     }
 
@@ -63,6 +64,7 @@ int main(int argc, char* argv[]) {
     SERVER_PORT = strtol(argv[2], &portstr, 10);
     SERVER_IP = argv[1];
     MODE = argv[3];
+    TOPIC = argv[4];
 
     if ((strcmp(MODE, "PUBLISHER") != 0) && (strcmp(MODE, "SUBSCRIBER") != 0)) {
         printf("Invalid Client mode ! \n");
@@ -106,6 +108,14 @@ int main(int argc, char* argv[]) {
     if (mode_ss < 0) {
         close(client_fd);
         printf("Couldn't send the mode to the server!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // now we need to send the client subscribed or published topic to the server as well
+    int pubsub_topic_ss = send(client_fd, TOPIC, strlen(TOPIC), 0);
+    if (pubsub_topic_ss < 0) {
+        close(client_fd);
+        printf("Unable to send the topic to the server!\n");
         exit(EXIT_FAILURE);
     }
 

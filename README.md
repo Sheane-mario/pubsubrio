@@ -76,7 +76,7 @@ Make sure to run these within the root directory.
 
 - Threaded TCP server using pthread
 - Multiple client support
-- Message loop: send/receive until client types exit
+- Message loop: send/receive until client types ```terminate```
 - Topic-based message infrastructure (WIP/future scope)
 - Clean modular design
 

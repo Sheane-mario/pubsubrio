@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -15,10 +16,34 @@ char* MODE;
 int client_fd;
 
 void *recv_thread_func() {
+    // to store the message send from the pubs
+    char publisher_msg[4096];
+    while (1) {
+        // receive the message from the server where publishers have sent 
+        recv(client_fd, publisher_msg, sizeof(publisher_msg) - 1, 0);
+        printf("%s \n", publisher_msg);
+    }
     return NULL;
 }
 
 void *send_thread_func() {
+    char client_command[4096];
+    while (1) {
+        fgets(client_command, sizeof(client_command), stdin);
+        int comm_s = send(client_fd, (char *)&client_command, sizeof(client_command), 0);
+        if (strcmp(client_command, "exit\n" ) == 0) {
+            // here i got a bug, when the exit is typed from the send thread, it closes the socket, so that receive thead runs infinitely, which was found to be a classic multithreading bug. 
+            //close(client_fd);
+            // using this shutdown i send signals to both the thereads that this is going to terminate, so close the socket from their threads as well
+            shutdown(client_fd, SHUT_RDWR);
+            close(client_fd);
+            exit(0);
+        } 
+        if (comm_s < 0) {
+            perror("Couldn't send the message to the server! \n");
+            exit(EXIT_FAILURE);
+        }
+    }
     return NULL;
 }
 
